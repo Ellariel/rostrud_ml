@@ -1,0 +1,9 @@
+connection_from:
+  database_from: 'yellow'
+  user_from: 'ivanov'
+  password_from: 'ZlwqA'
+  host_from: '1111.mdb.yandexcloud.net'
+  port_from: '6433'
+  ssl_mode_from: 'require'
+  sslrootcert_from: 'CA.pem'
+  shema_from: 'project_trudvsem'
