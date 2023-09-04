@@ -33,7 +33,6 @@ class Renewal:
     def download(self):
         if self.pathfrom.rsplit('.', maxsplit=1)[-1] == 'gz':
             pathgz = self.pathxml + '.gz'#os.path.join(self.datadir, self.pathxml + '.gz')
-            print(pathgz)
             wget.download(self.pathfrom, pathgz)
             unzip_cv(pathgz)
         if self.pathfrom.rsplit('.', maxsplit=1)[-1] == 'xml':

@@ -18,12 +18,12 @@ class AddingDataPsycopg:
         self.conn = psycopg2.connect(f"""
         host={attributes['host_from']}
         port={int(attributes['port_from'])}
-
+        #sslmode={attributes['ssl_mode_from']}
         dbname={attributes['database_from']}
         user={attributes['user_from']}
         password={attributes['password_from']}
         target_session_attrs=read-write
-        """)        #sslmode={attributes['ssl_mode_from']}
+        """)
         with self.conn.cursor() as cursor:
             cursor.execute('SELECT current_database ();')
             print(f'Вы подключены к базе: {cursor.fetchone()[0]}')
