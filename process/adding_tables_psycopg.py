@@ -14,7 +14,7 @@ class AddingDataPsycopg:
     """Класс AddingDataPsycopg предназначен для реализации процедуры выгрузки, 
     добавления, удаления набора данных"""
     def __init__(self):
-        attributes = Config(os.path.join('.', 'rostrud_ml/utils/config_to_bd.yml')).get_config('connection_from')
+        attributes = Config(os.path.join('./', 'rostrud_ml/utils/config_to_bd.yml')).get_config('connection_from')
         self.conn = psycopg2.connect(f"""
         host={attributes['host_from']}
         port={int(attributes['port_from'])}
