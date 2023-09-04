@@ -59,7 +59,7 @@ class Renewal:
             
         elif self.name == 'cvs':
             parser = get_parser(self.name, self.pathxml)
-            for table in ['curricula_vitae', 'workexp', 'edu', 'addedu']: #
+            for table in ['curricula_vitae', 'workexp']: #, 'edu', 'addedu']: #
                 self.df = parser.to_csvs(table)
                 self.df = process(table, self.df)
                 print(table, ": обработано")
