@@ -32,15 +32,19 @@ class Renewal:
     
     def download(self):
         if self.pathfrom.rsplit('.', maxsplit=1)[-1] == 'gz':
-            pathgz = self.pathxml + '.gz'#os.path.join(self.datadir, self.pathxml + '.gz')
-            print(pathgz)
+            pathgz = self.pathxml + '.gz'
             if not os.path.exists(pathgz):
                 wget.download(self.pathfrom, pathgz)
-                unzip_cv(pathgz)
+                #unzip_cv(pathgz)
         if self.pathfrom.rsplit('.', maxsplit=1)[-1] == 'xml':
             if not os.path.exists(self.pathxml):
                 wget.download(self.pathfrom, self.pathxml)
-        print('Файлы скачены:', self.date)
+        print('Файлы скачаны:', self.date)
+        
+    def extract(self):                
+        if not os.path.exists(self.pathxml):
+                unzip_cv(pathgz)
+        print('Файлы извлечены:', self.date)
             
     def parse_update(self):
         to_delete = ['stat_citizens', 'industries', 'professions', 'regions', 'stat_companies']
