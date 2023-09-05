@@ -43,7 +43,8 @@ class Renewal:
         
     def extract(self):                
         if not os.path.exists(self.pathxml):
-                unzip_cv(pathgz)
+            pathgz = self.pathxml + '.gz'
+            unzip_cv(pathgz)
         print('Файлы извлечены:', self.date)
             
     def parse_update(self):
