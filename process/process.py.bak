@@ -16,7 +16,7 @@ def process(table_name, df):
                 'skills_orig']
                 
         for col_name in cols:
-            if col_name in df:
+            if col_name in df.columns:
                 new_col_name = '_'.join(col_name.split('_')[:-1])
                 df[new_col_name] = cleaning.clean_out_html(df[col_name])
                 df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
@@ -30,7 +30,8 @@ def process(table_name, df):
         onehot_cols = ['drive_licences', 
                        'schedule_type']
         for col in onehot_cols:
-            df = cleaning.dummies(col, df)
+            if col_name in df.columns:
+                df = cleaning.dummies(col, df)
         
         mistake_cols = ['birthday', 
                         'experience']
@@ -44,10 +45,11 @@ def process(table_name, df):
         for col in cols:
             if col in df.columns:
                 cleaning.create_zero_one_col(col, df)
-        
-        df['position_name'] = df.position_name_orig.apply(cleaning.del_punct_dig)
-        df.position_name = df.position_name.apply(cleaning.capital_lower_strip)
-        df = cleaning.abs_col('salary', df)
+        if 'position_name_orig' in df.columns:
+            df['position_name'] = df.position_name_orig.apply(cleaning.del_punct_dig)
+            df.position_name = df.position_name.apply(cleaning.capital_lower_strip)
+        if 'salary' in df.columns:
+            df = cleaning.abs_col('salary', df)
         df = cleaning.time_date_separation('date_publish', df)
         df['inactive'] = 0
         df['profession_code'] = df['profession_code'].apply(cleaning.del_not_dig)
@@ -59,7 +61,7 @@ def process(table_name, df):
         cols = ['achievements_orig', 
                 'demands_orig']
         for col_name in cols:
-            if col_name in df:
+            if col_name in df.columns:
                 new_col_name = col_name.rsplit('_', maxsplit=1)[0]
                 df[new_col_name] = cleaning.clean_out_html(df[col_name])
                 df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
