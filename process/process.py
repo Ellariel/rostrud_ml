@@ -16,18 +16,22 @@ def process(table_name, df):
                 'skills_orig']
                 
         for col_name in cols:
-            if col_name in df:
+            if col_name in df.columns:
                 new_col_name = '_'.join(col_name.split('_')[:-1])
                 df[new_col_name] = cleaning.clean_out_html(df[col_name])
                 df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
-        
-        df['add_certificates_modified'] = df.add_certificates.apply(rostrud_ml.process.unify_cols.certificate)
-        df['other_info_modified'] = df.other_info.apply(rostrud_ml.process.unify_cols.other_info)
+        try:
+            df['add_certificates_modified'] = df.add_certificates.apply(rostrud_ml.process.unify_cols.certificate)
+            df['other_info_modified'] = df.other_info.apply(rostrud_ml.process.unify_cols.other_info)
+        except Exception as e:
+            print(e)
+            
         
         onehot_cols = ['drive_licences', 
                        'schedule_type']
         for col in onehot_cols:
-            df = cleaning.dummies(col, df)
+            if col_name in df.columns:
+                df = cleaning.dummies(col, df)
         
         mistake_cols = ['birthday', 
                         'experience']
@@ -56,12 +60,14 @@ def process(table_name, df):
         cols = ['achievements_orig', 
                 'demands_orig']
         for col_name in cols:
-            if col_name in df:
+            if col_name in df.columns:
                 new_col_name = col_name.rsplit('_', maxsplit=1)[0]
                 df[new_col_name] = cleaning.clean_out_html(df[col_name])
                 df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
-            
-        df['achievements_modified'] = df.achievements.apply(rostrud_ml.process.unify_cols.achievements)
+        try:
+            df['achievements_modified'] = df.achievements.apply(rostrud_ml.process.unify_cols.achievements)
+        except Exception as e:
+            print(e)
             
         df['job_title'] = df.job_title_orig.apply(cleaning.del_punct_dig)
         df.job_title = df.job_title.apply(cleaning.capital_lower_strip)
