@@ -121,13 +121,14 @@ class Renewal:
             add_data.conn.close()
     
     # удаление директории со всем содержимым       
-    def delete(self, to_remove='files'):
+    def delete(self, to_remove='files', remove_gz=True):
         if to_remove == 'files':
             pathgz = self.pathxml + '.gz'
             if os.path.exists(pathgz) and os.path.exists(self.pathxml):
                 os.remove(self.pathxml)
-            #if os.path.exists(pathgz) and os.path.getsize(pathgz) > 0:
-            #    os.remove(pathgz)
+            if os.path.exists(pathgz) and os.path.getsize(pathgz) > 0:
+                if remove_gz:
+                    os.remove(pathgz)
         
         else: 
             shutil.rmtree(self.datadir)
