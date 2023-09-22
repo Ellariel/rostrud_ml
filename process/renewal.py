@@ -4,13 +4,22 @@ import sys
 import shutil
 import pandas as pd
 import hashlib
+import pickle
 import rostrud_ml.process.parsing_xmls
 from rostrud_ml.utils.config import Config
-from rostrud_ml.process.utils import get_date, unzip_cv, get_parser, make_df, to_str_wquotes
+from rostrud_ml.process.utils import get_date, unzip_cv, get_parser, make_df, to_str_wquotes, get_csv_files, rem_csv_files, read_csv_object, get_pickle_files, rem_pickle_files
 from rostrud_ml.process.adding_tables_psycopg import AddingDataPsycopg
 from rostrud_ml.process.process import process
 from rostrud_ml.process.geti import hashes, update_hashes
 from rostrud_ml.process.adding_tables_psycopg_rostrud import *
+
+def save_pickle(df, file_name):
+    with open(file_name, 'wb') as f:
+        pickle.dump(df, f) 
+        
+def load_pickle(file_name):
+    with open(file_name, 'rb') as f:
+        return pickle.load(f)
 
 # в url можно передавать только ссылки с датой (пример: 
 # https://opendata.trudvsem.ru/oda2Hialoephidohyie1oR6chaem1oN0quiephooleiWei1aiD/7710538364-cv/data-20220204T044647-structure-20161130T143000.xml.gz)
@@ -25,12 +34,14 @@ class Renewal:
         raw_date = get_date(self.pathfrom)
         self.date = raw_date[:4] + '-' + raw_date[4:6] + '-' + raw_date[6:]
         self.workdir = Config(os.path.join('.', 'rostrud_ml/utils/all_tables_names.yml')).get_config('working_directory')
+        
         self.datadir = os.path.join(self.workdir, table_name)
         if not os.path.isdir(self.datadir):
             os.mkdir(self.datadir)
         self.pathxml = os.path.join(self.datadir, self.date + self.name + '.xml')
     
     def download(self):
+        print('downloading xml/gz files...', self.date)
         if self.pathfrom.rsplit('.', maxsplit=1)[-1] == 'gz':
             pathgz = self.pathxml + '.gz'
             if not os.path.exists(pathgz):
@@ -39,13 +50,14 @@ class Renewal:
         if self.pathfrom.rsplit('.', maxsplit=1)[-1] == 'xml':
             if not os.path.exists(self.pathxml):
                 wget.download(self.pathfrom, self.pathxml)
-        print('Файлы скачаны:', self.date)
+        print('xml/gz files are downloaded:', self.date)
         
-    def extract(self):                
+    def extract(self):    
+        print('extracting gz files...', self.date)            
         if not os.path.exists(self.pathxml):
             pathgz = self.pathxml + '.gz'
             unzip_cv(pathgz)
-        print('Файлы извлечены:', self.date)
+        print('xml/gz files are extracted:', self.date)
             
     def parse_update(self):
         to_delete = ['stat_citizens', 'industries', 'professions', 'regions', 'stat_companies']
@@ -58,30 +70,58 @@ class Renewal:
             parser.to_csvs()
             self.df = make_df(self.datadir)
             self.df = process(self.name, self.df)
+            
+            #fill undefined cols
+            self.col_names = Config(os.path.join('.', 'rostrud_ml/utils/all_tables_names.yml')).get_config('create_table')[self.name] ##
+            self.col_names = [i.split()[0] for i in self.col_names.split(',')]            
+            for c in self.col_names:
+                if c not in self.df.columns:
+                    self.df[c] = None
+            
             #открывается соединение с БД
             add_data = AddingDataPsycopg()
-            add_data.write_to_sql(self.df, self.name, 'project_trudvsem')
-            print(self.name + ": добавлено: ", self.df.shape[0], ' строк')
+            add_data.write_to_sql(self.df[self.col_names], self.name, 'project_trudvsem')
+            print(f"{self.name}({csv_file}) добавлено {self.df.shape[0]} строк")
             add_data.conn.close()
             
-        elif self.name == 'cvs':
+        elif self.name == 'curricula_vitae':
             parser = get_parser(self.name, self.pathxml)
-            for table in ['curricula_vitae', 'workexp']: #, 'edu', 'addedu']: #
-                self.df = parser.to_csvs(table)
-                self.df = process(table, self.df)
-                print(table, ": обработано")
-                #открывается соединение с БД
-                add_data = AddingDataPsycopg()
-                # записываем в БД
-                add_data.write_to_sql(self.df, table, 'project_trudvsem')
-                print(table + ": добавлено: ", self.df.shape[0], ' строк')
-         
-                add_data.conn.close()
+            for table in ['curricula_vitae', 'workexp', 'edu', 'addedu']: #
+                #self.df = 
+                parser.to_csvs(table)
+                #csv_files = get_csv_files(self.datadir)
+                csv_files = get_pickle_files(self.datadir)
+                for csv_file in csv_files:
+                    try:
+                        #self.df = read_csv_object(csv_file)
+                        self.df = load_pickle(csv_file)
+                        self.df = process(table, self.df)
+                        print(f"{table}({csv_file}) is processed")
+                        
+                        #fill undefined cols
+                        self.col_names = Config(os.path.join('.', 'rostrud_ml/utils/all_tables_names.yml')).get_config('create_table')[table] ##
+                        self.col_names = [i.split()[0] for i in self.col_names.split(',')]            
+                        for c in self.col_names:
+                            if c not in self.df.columns:
+                                self.df[c] = None                        
+                        
+                        #открывается соединение с БД
+                        add_data = AddingDataPsycopg()
+                        # записываем в БД
+                        add_data.write_to_sql(self.df[self.col_names], table, 'project_trudvsem')
+                        print(f"{table}({csv_file}) добавлено {self.df.shape[0]} строк")
+                        add_data.conn.close()
+                    except Exception as e:
+                        print(f'{table}({csv_file}) error: {e}')
+                #rem_csv_files(csv_files)
+                rem_pickle_files(csv_files)
+                print("temporary files deleted")  
                     
         elif self.name == 'vacancies':
             parser = get_parser(self.name)
-            parser.to_csvs()
+            parser.to_csvs(self.name)
             print(self.date)
+            '''
             #открывается соединение с БД
             add_data = AddingDataPsycopg()
             old_hash_set = add_data.get_table_as_df('md5_hash, inactive', 'vacancies', 'project_trudvsem')
@@ -108,18 +148,78 @@ class Renewal:
             #if len(same) > 0: 
             #    fix_error_inactivation_new('project_trudvsem', 'vacancies', to_str_wquotes(same))
             add_data.conn.close()
+            '''
+            #csv_files = get_csv_files(self.datadir)
+            csv_files = get_pickle_files(self.datadir)
+            for csv_file in csv_files:
+                    try:
+                        #self.df = read_csv_object(csv_file)
+                        self.df = load_pickle(csv_file)
+                        self.df = process(self.name, self.df)
+                        #print(self.name, ": обработано")
+                        print(f"{self.name}({csv_file}) is processed")
+                        
+                        #fill undefined cols
+                        self.col_names = Config(os.path.join('.', 'rostrud_ml/utils/all_tables_names.yml')).get_config('create_table')[self.name] ##
+                        self.col_names = [i.split()[0] for i in self.col_names.split(',')]            
+                        for c in self.col_names:
+                            if c not in self.df.columns:
+                                self.df[c] = None
+                        
+                        #открывается соединение с БД
+                        add_data = AddingDataPsycopg()
+                        # записываем в БД
+                        add_data.write_to_sql(self.df[self.col_names], self.name, 'project_trudvsem')
+                        #print(self.name + ": добавлено: ", self.df.shape[0], ' строк')
+                        print(f"{self.name}({csv_file}) добавлено {self.df.shape[0]} строк")
+                        add_data.conn.close()
+                    except Exception as e:
+                        print(f'{self.name}({csv_file}) error: {e}')                    
+            #rem_csv_files(csv_files)
+            rem_pickle_files(csv_files)
+            print("temporary files deleted")            
             
         else:
             parser = get_parser(self.name)
             parser.to_csvs()
-            self.df = make_df(self.datadir)
-            self.df = process(self.name, self.df)
-            #открывается соединение с БД
-            add_data = AddingDataPsycopg()
-            add_data.write_to_sql(self.df, self.name, 'project_trudvsem')
-            print(self.name + ": добавлено: ", self.df.shape[0], ' строк')
-            add_data.conn.close()
-    
+            #self.df = make_df(self.datadir)
+            #self.df = process(self.name, self.df)
+            ##открывается соединение с БД
+            #add_data = AddingDataPsycopg()
+            #add_data.write_to_sql(self.df, self.name, 'project_trudvsem')
+            #print(self.name + ": добавлено: ", self.df.shape[0], ' строк')
+            #add_data.conn.close()
+            
+            #csv_files = get_csv_files(self.datadir)
+            csv_files = get_pickle_files(self.datadir)
+            for csv_file in csv_files:
+                    try:
+                        #self.df = read_csv_object(csv_file)
+                        self.df = load_pickle(csv_file)
+                        self.df = process(self.name, self.df)
+                        #print(self.name, ": обработано")
+                        print(f"{self.name}({csv_file}) is processed")
+                        
+                            #fill undefined cols
+                        self.col_names = Config(os.path.join('.', 'rostrud_ml/utils/all_tables_names.yml')).get_config('create_table')[self.name] ##
+                        self.col_names = [i.split()[0] for i in self.col_names.split(',')]            
+                        for c in self.col_names:
+                            if c not in self.df.columns:
+                                self.df[c] = None    
+                        
+                        #открывается соединение с БД
+                        add_data = AddingDataPsycopg()
+                        # записываем в БД
+                        add_data.write_to_sql(self.df[self.col_names], self.name, 'project_trudvsem')
+                        #print(self.name + ": добавлено: ", self.df.shape[0], ' строк')
+                        print(f"{self.name}({csv_file}) добавлено {self.df.shape[0]} строк")
+                        add_data.conn.close()
+                    except Exception as e:
+                        print(f'{self.name}({csv_file}) error: {e}')                    
+            #rem_csv_files(csv_files)
+            rem_pickle_files(csv_files)
+            print("temporary files deleted")
+                       
     # удаление директории со всем содержимым       
     def delete(self, to_remove='files', remove_gz=True):
         if to_remove == 'files':
@@ -132,4 +232,4 @@ class Renewal:
         
         else: 
             shutil.rmtree(self.datadir)
-        print("Files deleted")
+        print("xml/gz files deleted")

@@ -1,6 +1,9 @@
-import gzip
+import gzip, os
+import glob
 import shutil
+import pickle
 from os import listdir
+import pandas as pd
 from rostrud_ml.process.parsing_xmls import *
 
 
@@ -20,7 +23,7 @@ def unzip_cv(path):
 
 # Выбрать парсер по переданному имени обновляемой таблицы
 def get_parser(table_name, path=None):
-    if table_name == 'cvs':
+    if table_name == 'curricula_vitae':
         return ParseCvs()
     if table_name == 'invitations':
         return ParseInvitations()
@@ -42,10 +45,17 @@ def get_parser(table_name, path=None):
         return ParseStatCitizens()
     return None
     
+def save_pickle(df, file_name):
+    with open(file_name, 'wb') as f:
+        pickle.dump(df, f) 
+        
+def load_pickle(file_name):
+    with open(file_name, 'rb') as f:
+        return pickle.load(f)
     
 # Создать датафрейм из csv с типом данных 'object'
 def read_csv_object(filepath):
-    return pd.read_csv(filepath, dtype = 'object')
+    return pd.read_csv(filepath, dtype='object')
 
 # Создать датафрейм из коллекции .csv файлов, тип данных 'object', сортировка по алфавиту, обнуляя индекс
 def make_df(dirpath):
@@ -55,3 +65,27 @@ def make_df(dirpath):
 # Добавить кавычки при создании строки из списка
 def to_str_wquotes(lst):
     return ', '.join(f"'{w}'" for w in lst)
+
+def get_csv_files(dirpath):
+    #file_list = glob.glob(dirpath + "/*.csv")
+    filepaths = [dirpath + "/" + f for f in listdir(dirpath) if f.endswith('.csv')]
+    if len(filepaths) and os.path.exists(filepaths[0]):
+        return filepaths
+    
+def rem_csv_files(filepaths):
+    #file_list = glob.glob(dirpath + "/*.csv")
+    #filepaths = [dirpath + "/" + f for f in listdir(dirpath) if f.endswith('.csv')]
+    if len(filepaths) and os.path.exists(filepaths[0]):
+        for f in filepaths:
+            os.remove(f)
+            
+def get_pickle_files(dirpath):
+    filepaths = [dirpath + "/" + f for f in listdir(dirpath) if f.endswith('.pickle')]
+    if len(filepaths) and os.path.exists(filepaths[0]):
+        return filepaths
+    
+def rem_pickle_files(filepaths):
+    if len(filepaths) and os.path.exists(filepaths[0]):
+        for f in filepaths:
+            os.remove(f)
+

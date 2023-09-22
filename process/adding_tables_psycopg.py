@@ -26,7 +26,7 @@ class AddingDataPsycopg:
         """)        #sslmode={attributes['ssl_mode_from']}
         with self.conn.cursor() as cursor:
             cursor.execute('SELECT current_database ();')
-            print(f'Вы подключены к базе: {cursor.fetchone()[0]}')
+            print(f'database connection established: {cursor.fetchone()[0]}')
         
     def write_to_sql(self, df: pd.DataFrame, table_name: str, schema: str):
         """Функция, которая которая загружает записи в БД"""
@@ -67,6 +67,17 @@ class AddingDataPsycopg:
         (простой вариант для одной таблицы)"""
         with tempfile.TemporaryFile() as tmpfile:
             copy_sql = f"""COPY (SELECT {columns_name} FROM {schema}.{table_name}) TO STDOUT WITH CSV HEADER"""
+            with self.conn.cursor() as cursor:
+                cursor.copy_expert(copy_sql, tmpfile)
+            tmpfile.seek(0)
+            df = pd.read_csv(tmpfile)
+        return df
+    
+    def query_exec_as_df(self, query: str) -> pd.DataFrame:
+        """Функция, которая выгружает данные из таблицы
+        (простой вариант для одной таблицы)"""
+        with tempfile.TemporaryFile() as tmpfile:
+            copy_sql = f"""COPY ({query}) TO STDOUT WITH CSV HEADER"""
             with self.conn.cursor() as cursor:
                 cursor.copy_expert(copy_sql, tmpfile)
             tmpfile.seek(0)

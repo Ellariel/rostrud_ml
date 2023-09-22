@@ -90,8 +90,9 @@ def process(table_name, df):
                 'qualification_orig', 
                 'speciality_orig']
         for col_name in cols:
-            new_col_name = col_name.rsplit('_', maxsplit=1)[0]
-            df[new_col_name] = df[col_name].apply(cleaning.del_punct)
+            if col_name in df.columns:
+                new_col_name = col_name.rsplit('_', maxsplit=1)[0]
+                df[new_col_name] = df[col_name].apply(cleaning.del_punct)
         
         df.faculty = df.faculty.apply(cleaning.capital_lower_strip)
         
@@ -104,8 +105,9 @@ def process(table_name, df):
         cols = ['course_name_orig', 
                 'legal_name_orig']
         for col_name in cols:
-            new_col_name = col_name.rsplit('_', maxsplit=1)[0]
-            df[new_col_name] = df[col_name].apply(cleaning.del_punct_dig)
+            if col_name in df.columns:
+                new_col_name = col_name.rsplit('_', maxsplit=1)[0]
+                df[new_col_name] = df[col_name].apply(cleaning.del_punct_dig)
             
         df = cleaning.description_col(df)
         
@@ -164,14 +166,15 @@ def process(table_name, df):
         'requirements_qualifications_orig',
         'requirements_required_certificates_orig']
         for col_name in cols:
-            try:
-                new_col_name = '_'.join(col_name.split('_')[:-1])
-                df[new_col_name] = cleaning.clean_out_html(df[col_name])
-                df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
-            except IndexError:
-                continue
-            except KeyError:
-                continue
+            if col_name in df.columns:
+                try:
+                    new_col_name = '_'.join(col_name.split('_')[:-1])
+                    df[new_col_name] = cleaning.clean_out_html(df[col_name])
+                    df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
+                except IndexError:
+                    continue
+                except KeyError:
+                    continue
         df['inactive'] = 0
             
     # обработка откликов
@@ -239,14 +242,15 @@ def process(table_name, df):
                 continue
         cols = ['description_orig', 'inner_info_moderation_comment_orig']  
         for col_name in cols:
-            try:
-                new_col_name = '_'.join(col_name.split('_')[:-1])
-                df[new_col_name] = cleaning.clean_out_html(df[col_name])
-                df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
-            except IndexError:
-                continue
-            except KeyError:
-                continue
+            if col_name in df.columns:
+                try:
+                    new_col_name = '_'.join(col_name.split('_')[:-1])
+                    df[new_col_name] = cleaning.clean_out_html(df[col_name])
+                    df[new_col_name] = df[new_col_name].apply(cleaning.del_punct_dig)
+                except IndexError:
+                    continue
+                except KeyError:
+                    continue
     
 #     print(table_name, '- готов')
     return df

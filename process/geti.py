@@ -18,7 +18,7 @@ def hashes(table_name):
         add_data = AddingDataPsycopg()
         hash_set = set(add_data.get_hash_list(table_name, 'project_trudvsem'))
         add_data.conn.close()
-    print('return hashes')
+    print(f'hashes of {table_name} are returned: {len(hash_set)}')
     return hash_set
 
 def update_hashes(table, old_hash_set, new_hash_list):
@@ -31,7 +31,8 @@ def update_hashes(table, old_hash_set, new_hash_list):
         pickle.dump(all_hashes, fp)
     print('hashes saved')
     
-def create_md5(row, exclude=['date_last_updated', 'innerInfo_dateModify', 'publishDate']):
-    row = {x: y for x, y in sorted(row.items()) if x not in exclude}
-
+def create_md5(row, added=None, excluded=['date_last_updated', 'innerInfo_dateModify', 'publishDate']):
+    if added == None: ##
+        added = row.keys() ##
+    row = {x: y for x, y in sorted(row.items()) if x in added and x not in excluded}
     return hashlib.md5(''.join(row.values()).encode()).hexdigest()
