@@ -19,7 +19,7 @@ def hashes(table_name):
         hash_set = set(add_data.get_hash_list(table_name, 'project_trudvsem'))
         add_data.conn.close()
     print(f'hashes of {table_name} are returned: {len(hash_set)}')
-    return hash_set
+    return list(hash_set)
 
 def update_hashes(table, old_hash_set, new_hash_list):
     print(datetime.datetime.now().time(), 'renew pickled hashes')

@@ -9,8 +9,9 @@ from rostrud_ml.utils.config import Config
 #from rostrud_ml.process.utils import save_pickle
 
 def save_pickle(df, file_name):
-    with open(file_name, 'wb') as f:
-        pickle.dump(df, f) 
+    if len(df) > 0:
+        with open(file_name, 'wb') as f:
+            pickle.dump(df, f) 
         
 def load_pickle(file_name):
     with open(file_name, 'rb') as f:
@@ -92,6 +93,7 @@ class ParseCvs(Parse):
                 #добавим переменную с хеш-суммой строки         
                 md5_hash = create_md5(d, added=self.md5hash_variables) #########################################################################3
                 if md5_hash not in old_hash_set:
+                    old_hash_set.append(md5_hash)
                     #при необходимости версионирования
                     #new_hash_list.append(md5_hash)
                     #добавим переменную с хеш-суммой строки 
@@ -132,6 +134,7 @@ class ParseCvs(Parse):
                 # для каждой записи с нужным тегом создаётся хеш-сумма и сравнивается с имеющимися
                 md5_hash = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
                 if md5_hash not in old_hash_set:
+                    old_hash_set.append(md5_hash)
                     #new_hash_list.append(md5_hash)
                     d = {}
                     d['date_last_updated'] = self.date
@@ -227,6 +230,7 @@ class ParseVacancies(Parse):
             #добавим переменную с хеш-суммой строки         
             md5_hash = create_md5(d, added=self.md5hash_variables) #########################################################################3
             if md5_hash not in old_hash_set:
+                    old_hash_set.append(md5_hash)
                     #при необходимости версионирования
                     #new_hash_list.append(md5_hash)
                     #добавим переменную с хеш-суммой строки 
@@ -256,41 +260,47 @@ class ParseResponses(Parse):
         df = pd.DataFrame()
         i = 1
         l = []
+        old_hash_set = hashes(self.name)
 
         for event, elem in etree.iterparse(self.pathxml, tag='response', recover=True):
-            d = {}
-#             d['date_last_updated'] = self.date
-            for element in list(elem): 
-                if element.tag == 'link':
-                    continue
+            md5_hash = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
+            if md5_hash not in old_hash_set:
+                old_hash_set.append(md5_hash)
+            
+                d['date_last_updated'] = self.date
+                d = {}
+    #             d['date_last_updated'] = self.date
+                for element in list(elem): 
+                    if element.tag == 'link':
+                        continue
 
-                elif len(list(element)) >= 1: 
-                    for sub_element in list(element):
-                        d[element.tag + '_' + sub_element.tag] = sub_element.text
-                        if len(list(sub_element)) >= 1:
-                            for sub_sub_element in list(sub_element):
-                                d[element.tag + '_' + sub_element.tag + '_' + sub_sub_element.tag] = sub_sub_element.text 
-                elif element.text != None:
-                    d[element.tag] = element.text 
+                    elif len(list(element)) >= 1: 
+                        for sub_element in list(element):
+                            d[element.tag + '_' + sub_element.tag] = sub_element.text
+                            if len(list(sub_element)) >= 1:
+                                for sub_sub_element in list(sub_element):
+                                    d[element.tag + '_' + sub_element.tag + '_' + sub_sub_element.tag] = sub_sub_element.text 
+                    elif element.text != None:
+                        d[element.tag] = element.text 
 
-                else:
-                    continue
-        
-#             d['md5_hash'] = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
+                    else:
+                        continue
+            
+                d['md5_hash'] = md5_hash
 
-            elem.clear()
-            for ancestor in elem.xpath('ancestor-or-self::*'):
-                    while ancestor.getprevious() is not None:
-                        del ancestor.getparent()[0]    
-            l.append(d)
+                elem.clear()
+                for ancestor in elem.xpath('ancestor-or-self::*'):
+                        while ancestor.getprevious() is not None:
+                            del ancestor.getparent()[0]    
+                l.append(d)
 
-            if len(l) == self.csv_size: 
-                df = pd.DataFrame(l)
-                #df.to_csv(self.datadir + f'/responses{i}.csv', index=False)
-                save_pickle(df, self.datadir + f'/{self.name}{i}.pickle')
-                i = i + 1
-                l = []
-                df = pd.DataFrame()
+                if len(l) == self.csv_size: 
+                    df = pd.DataFrame(l)
+                    #df.to_csv(self.datadir + f'/responses{i}.csv', index=False)
+                    save_pickle(df, self.datadir + f'/{self.name}{i}.pickle')
+                    i = i + 1
+                    l = []
+                    df = pd.DataFrame()
                 
         df = pd.DataFrame(l) 
         #df.to_csv(self.datadir + '/responses.csv', index=False)
@@ -306,13 +316,15 @@ class ParseInvitations(Parse):
         df = pd.DataFrame()
         i = 1
         l = []
-        add_data = AddingDataPsycopg()
-        old_hash_set = set(add_data.get_hash_list('invitations', 'project_trudvsem'))
-        add_data.conn.close()
+        #add_data = AddingDataPsycopg()
+        #old_hash_set = set(add_data.get_hash_list('invitations', 'project_trudvsem'))
+        #add_data.conn.close()
+        old_hash_set = hashes(self.name)
 
         for event, elem in etree.iterparse(self.pathxml, tag='invitation', recover=True):
             md5_hash = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
             if md5_hash not in old_hash_set:
+                old_hash_set.append(md5_hash)
                 d = {}
                 d['date_last_updated'] = self.date
                 for element in list(elem): 
@@ -331,7 +343,7 @@ class ParseInvitations(Parse):
                     else:
                         continue
 
-                d['md5_hash'] = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
+                d['md5_hash'] = md5_hash
 
                 elem.clear()
                 for ancestor in elem.xpath('ancestor-or-self::*'):
@@ -339,20 +351,20 @@ class ParseInvitations(Parse):
                             del ancestor.getparent()[0]    
                 l.append(d)
 
-            if len(l) == self.csv_size: 
-                df = pd.DataFrame(l)
+                if len(l) == self.csv_size: 
+                    df = pd.DataFrame(l)
 
-                #df.to_csv(self.datadir + f'/invitations{i}.csv', index=False) 
-                save_pickle(df, self.datadir + f'/{self.name}{i}.pickle')
-                i = i + 1
-                l = []
-                df = pd.DataFrame()
+                    #df.to_csv(self.datadir + f'/invitations{i}.csv', index=False) 
+                    save_pickle(df, self.datadir + f'/{self.name}{i}.pickle')
+                    i = i + 1
+                    l = []
+                    df = pd.DataFrame()
                 
         df = pd.DataFrame(l) 
         #df.to_csv(self.datadir + '/invitations.csv', index=False)
         save_pickle(df, self.datadir + f'/{self.name}.pickle')
         print(f'{self.name} is prepared')
-        
+##################################################################################################################################################
 # Парсинг файла с организациями
 class ParseOrganizations(Parse):
     def __init__(self):
