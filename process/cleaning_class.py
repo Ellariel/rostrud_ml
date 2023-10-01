@@ -319,46 +319,46 @@ class CleaningData:
     def create_zero_one_col(self, series_name: str, df: pd.DataFrame) -> pd.DataFrame:
         """Функция для создания колонки с переменными в формате 1 или 0"""
         if series_name == 'accommodation_capability':
-            df.loc[df.accommodation_capability == 'жилье предоставляется', 'accommodation_capability'] = 1
-            df.loc[df.accommodation_capability == 'жилье не предоставляется', 'accommodation_capability'] = 0
+            df.loc[(df.accommodation_capability == 'жилье предоставляется') | (df.accommodation_capability == 'true'), 'accommodation_capability'] = 1
+            df.loc[(df.accommodation_capability == 'жилье не предоставляется') | (df.accommodation_capability == 'false'), 'accommodation_capability'] = 0
             return df
         elif series_name == 'inner_info_visibility':
             df.loc[df.inner_info_visibility == 'Видно всем', 'inner_info_visibility'] = 1
             return df
         elif series_name == 'need_medcard':
-            df.loc[df.need_medcard == 'требуется', 'need_medcard'] = 1
-            df.loc[df.need_medcard == 'не требуется', 'need_medcard'] = 0
+            df.loc[(df.need_medcard == 'требуется') | (df.need_medcard == 'true'), 'need_medcard'] = 1
+            df.loc[(df.need_medcard == 'не требуется') | (df.need_medcard == 'false'), 'need_medcard'] = 0
             return df
         elif series_name == 'retraining_capability':
-            df.loc[df.retraining_capability == 'Готов к переобучению', 'retraining_capability'] = 1
-            df.loc[df.retraining_capability == 'Не готов к переобучению', 'retraining_capability'] = 0
+            df.loc[(df.retraining_capability == 'Готов к переобучению') | (df.retraining_capability == 'true'), 'retraining_capability'] = 1
+            df.loc[(df.retraining_capability == 'Не готов к переобучению') | (df.retraining_capability == 'false'), 'retraining_capability'] = 0
             return df
         elif series_name == 'retraining_grant':
-            df.loc[df.retraining_grant == 'есть стипендия', 'retraining_grant'] = 1
-            df.loc[df.retraining_grant == 'нет стипендии', 'retraining_grant'] = 0
+            df.loc[(df.retraining_grant == 'есть стипендия') | (df.retraining_grant == 'true'), 'retraining_grant'] = 1
+            df.loc[(df.retraining_grant == 'нет стипендии') | (df.retraining_grant == 'false'), 'retraining_grant'] = 0
             return df
         elif series_name == 'activity_flag_candidate':
-            df.loc[df.activity_flag_candidate == 'Активен', 'activity_flag_candidate'] = 1
-            df.loc[df.activity_flag_candidate == 'Не активен', 'activity_flag_candidate'] = 0
+            df.loc[(df.activity_flag_candidate == 'Активен') | (df.activity_flag_candidate == 'true'), 'activity_flag_candidate'] = 1
+            df.loc[(df.activity_flag_candidate == 'Не активен') | (df.activity_flag_candidate == 'false'), 'activity_flag_candidate'] = 0
             return df
         elif series_name == 'activity_flag_manager':
-            df.loc[df.activity_flag_manager == 'Активен', 'activity_flag_manager'] = 1
-            df.loc[df.activity_flag_manager == 'Не активен', 'activity_flag_manager'] = 0
+            df.loc[(df.activity_flag_manager == 'Активен') | (df.activity_flag_manager == 'true'), 'activity_flag_manager'] = 1
+            df.loc[(df.activity_flag_manager == 'Не активен') | (df.activity_flag_manager == 'false'), 'activity_flag_manager'] = 0
             return df
         elif series_name == 'is_new':
             df.loc[df.is_new == 'Новый отклик', 'is_new'] = 1
             df.loc[df.is_new == 'Не новый отклик', 'is_new'] = 0
             return df
         elif series_name == 'first_rate_company':
-            df.loc[df.first_rate_company == 'Относится к крупнейшим компаниям', 'first_rate_company'] = 1
-            df.loc[df.first_rate_company == 'Не относится к крупнейшим компаниям', 'first_rate_company'] = 0
+            df.loc[(df.first_rate_company == 'Относится к крупнейшим компаниям') | (df.first_rate_company == 'true'), 'first_rate_company'] = 1
+            df.loc[(df.first_rate_company == 'Не относится к крупнейшим компаниям') | (df.first_rate_company == 'false'), 'first_rate_company'] = 0
             return df
         elif series_name == 'abilympics_participation':
             df.loc[df.abilympics_participation == 'Участник движения', 'abilympics_participation'] = 1
             return df
         elif series_name == 'business_trips':
-            df.loc[df.business_trips == 'Готов к командировкам', 'business_trips'] = 1
-            df.loc[df.business_trips == 'Не готов к командировкам', 'business_trips'] = 0
+            df.loc[(df.business_trips == 'Готов к командировкам') | (df.business_trips == 'true'), 'business_trips'] = 1
+            df.loc[(df.business_trips == 'Не готов к командировкам') | (df.business_trips == 'false'), 'business_trips'] = 0
             return df
         elif series_name == 'nark_certificate':
             df.loc[df.nark_certificate == 'Свидетельство о независимой оценке квалификации', 'nark_certificate'] = 1
@@ -367,8 +367,8 @@ class CleaningData:
             df.loc[df.nark_inspection_status == 'Данные подтверждены', 'nark_inspection_status'] = 1
             return df
         elif series_name == 'relocation':
-            df.loc[df.relocation == 'Да', 'relocation'] = 1
-            df.loc[df.relocation == 'Нет', 'relocation'] = 0
+            df.loc[(df.relocation == 'Да') | (df.relocation == 'true'), 'relocation'] = 1
+            df.loc[(df.relocation == 'Нет') | (df.relocation == 'false'), 'relocation'] = 0
             return df
         elif series_name == 'worldskills_type':
             df.loc[df.worldskills_type == 'Participation', 'worldskills_type'] = 1

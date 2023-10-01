@@ -93,7 +93,7 @@ class ParseCvs(Parse):
                 #добавим переменную с хеш-суммой строки         
                 md5_hash = create_md5(d, added=self.md5hash_variables) #########################################################################3
                 if md5_hash not in old_hash_set:
-                    old_hash_set.append(md5_hash)
+                    old_hash_set.add(md5_hash)
                     #при необходимости версионирования
                     #new_hash_list.append(md5_hash)
                     #добавим переменную с хеш-суммой строки 
@@ -134,7 +134,7 @@ class ParseCvs(Parse):
                 # для каждой записи с нужным тегом создаётся хеш-сумма и сравнивается с имеющимися
                 md5_hash = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
                 if md5_hash not in old_hash_set:
-                    old_hash_set.append(md5_hash)
+                    old_hash_set.add(md5_hash)
                     #new_hash_list.append(md5_hash)
                     d = {}
                     d['date_last_updated'] = self.date
@@ -177,11 +177,11 @@ class ParseVacancies(Parse):
         Parse.__init__(self, 'vacancies')
         self.md5hash_variables = self.variables_list['vacancies'] ##
         
-    def to_csvs(self, table):
+    def to_csvs(self):
         df = pd.DataFrame()
         i = 1
         l = []
-        old_hash_set = hashes(table)
+        old_hash_set = hashes(self.name)
         
         for event, elem in etree.iterparse(self.pathxml, tag='vacancy', recover=True):
             
@@ -230,7 +230,7 @@ class ParseVacancies(Parse):
             #добавим переменную с хеш-суммой строки         
             md5_hash = create_md5(d, added=self.md5hash_variables) #########################################################################3
             if md5_hash not in old_hash_set:
-                    old_hash_set.append(md5_hash)
+                    old_hash_set.add(md5_hash)
                     #при необходимости версионирования
                     #new_hash_list.append(md5_hash)
                     #добавим переменную с хеш-суммой строки 
@@ -265,11 +265,10 @@ class ParseResponses(Parse):
         for event, elem in etree.iterparse(self.pathxml, tag='response', recover=True):
             md5_hash = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
             if md5_hash not in old_hash_set:
-                old_hash_set.append(md5_hash)
-            
-                d['date_last_updated'] = self.date
+                old_hash_set.add(md5_hash)
                 d = {}
-    #             d['date_last_updated'] = self.date
+                d['date_last_updated'] = self.date
+                
                 for element in list(elem): 
                     if element.tag == 'link':
                         continue
@@ -324,7 +323,7 @@ class ParseInvitations(Parse):
         for event, elem in etree.iterparse(self.pathxml, tag='invitation', recover=True):
             md5_hash = hashlib.md5(etree.tostring(elem, encoding='UTF-8')).hexdigest()
             if md5_hash not in old_hash_set:
-                old_hash_set.append(md5_hash)
+                old_hash_set.add(md5_hash)
                 d = {}
                 d['date_last_updated'] = self.date
                 for element in list(elem): 

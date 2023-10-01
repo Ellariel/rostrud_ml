@@ -51,10 +51,26 @@ class Renewal:
     def _check_cols(self, table_name):
         #fill undefined cols
         self.col_names = Config(os.path.join('.', 'rostrud_ml/utils/all_tables_names.yml')).get_config('create_table')[table_name]
-        self.col_names = [i.split()[0] for i in self.col_names.split(',')]            
-        for c in self.col_names:
+        self.col_types = [i.split()[1].lower() for i in self.col_names.split(',')] 
+        self.col_names = [i.split()[0] for i in self.col_names.split(',')] 
+                   
+        for i, c in enumerate(self.col_names):
             if c not in self.df.columns:
-                self.df[c] = None    
+                if 'int' in self.col_types[i]:
+                    self.df[c] = 0
+                elif 'bool' in self.col_types[i]:
+                    self.df[c] = False
+                else:
+                    self.df[c] = None
+            '''
+            else:
+                if 'int' in self.col_types[i]:
+                    self.df[c] = self.df[c].astype(int)
+                elif 'bool' in self.col_types[i]:
+                    self.df[c] = self.df[c].astype(bool)
+                else:
+                    pass  
+            '''     
     
     def _write_to_bd(self, table_name):
         #открывается соединение с БД
@@ -252,6 +268,8 @@ class Renewal:
                         print(f"{self.name}({csv_file}) добавлено {self.df.shape[0]} строк")
                         add_data.conn.close()
                         '''
+                        #print(self.df.accommodation_capability.value_counts())
+                        
                         self._write_to_bd(self.name)
                         print(f"{self.name}({csv_file}) добавлено {self.df.shape[0]} строк")
                         
