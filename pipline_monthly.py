@@ -87,7 +87,7 @@ from rostrud_ml.process.renewal import Renewal
 #Cоздание таблиц в 
 print(f"open database and create tables...")
 db = AddingDataPsycopg()
-for table in ['curricula_vitae', 'workexp', 'vacancies', 'professions', 'invitations', 'responses']: # 'edu', 'addedu', 'industries', 'regions', 
+for table in ['curricula_vitae', 'workexp', 'vacancies', 'professions', 'invitations', 'responses', 'industries', 'regions']: # 'edu', 'addedu'
     db.create_table(table, 'project_trudvsem') #'project_trudvsem' - название схемы в вашей БД, создать, если нету
 db.conn.close()
 
@@ -119,27 +119,27 @@ for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
         ren.parse_update()
       except Exception as e:
         print(f'professions error: {e}')
-      ren.delete(remove_gz=False)
+      ren.delete(remove_gz=remove_gz)
       
-#      try:
-#        print('\nindustries')
-#        ren = Renewal('industries', base_url + file_url[2] + link['regions'])
-#        ren.download()
-#        ren.extract()
-#        ren.parse_update()
-#      except Exception as e:
-#        print(f'industries error: {e}')
-#      ren.delete(remove_gz=False)
-
-#      try:
-#        print('\nregions')
-#        ren = Renewal('regions', base_url + file_url[3] + link['industries'])
-#        ren.download()
-#        ren.extract()
-#        ren.parse_update()
-#      except Exception as e:
-#        print(f'regions error: {e}')
-#      ren.delete(remove_gz=False)
+      try:
+        print('\nregions')
+        ren = Renewal('regions', base_url + file_url[2] + link['regions'])
+        ren.download()
+        ren.extract()
+        ren.parse_update()
+      except Exception as e:
+        print(f'regions error: {e}')
+      ren.delete(remove_gz=remove_gz)
+      
+      try:
+        print('\nindustries')
+        ren = Renewal('industries', base_url + file_url[3] + link['industries'])
+        ren.download()
+        ren.extract()
+        ren.parse_update()
+      except Exception as e:
+        print(f'industries error: {e}')
+      ren.delete(remove_gz=remove_gz)
 
   if pd.notna(link['cv']):
     try:
