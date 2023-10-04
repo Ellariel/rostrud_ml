@@ -1,3 +1,10 @@
+#manual
+workdir/
+csv/
+pgdata/
+cached/
+pgsql/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
