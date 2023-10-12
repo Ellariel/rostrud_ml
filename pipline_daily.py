@@ -87,7 +87,7 @@ from rostrud_ml.process.renewal import Renewal
 #Cоздание таблиц в 
 print(f"open database and create tables...")
 db = AddingDataPsycopg()
-for table in ['curricula_vitae', 'workexp', 'vacancies', 'professions', 'invitations', 'responses', 'industries', 'regions']: # 'edu', 'addedu', 'industries', 'regions', 
+for table in ['curricula_vitae', 'workexp', 'vacancies', 'professions', 'invitations', 'responses', 'industries', 'regions', 'edu', 'addedu']: 
     db.create_table(table, 'project_trudvsem') #'project_trudvsem' - название схемы в вашей БД, создать, если нету
 db.conn.close()
 
@@ -147,7 +147,7 @@ for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
       ren = Renewal('curricula_vitae', base_url + file_url[0] + link['cv'])
       ren.download()
       ren.extract()
-      ren.parse_update(default_tables=['curricula_vitae', 'workexp'])  #default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu']
+      ren.parse_update(default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu'])  #default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu']
     except Exception as e:
       print(f'curricula_vitae error: {e}')
     ren.delete(remove_gz=remove_gz)

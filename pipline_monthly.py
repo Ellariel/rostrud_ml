@@ -87,7 +87,7 @@ from rostrud_ml.process.renewal import Renewal
 #Cоздание таблиц в 
 print(f"open database and create tables...")
 db = AddingDataPsycopg()
-for table in ['curricula_vitae', 'workexp', 'vacancies', 'professions', 'invitations', 'responses', 'industries', 'regions']: # 'edu', 'addedu'
+for table in ['curricula_vitae', 'workexp', 'vacancies', 'professions', 'invitations', 'responses', 'industries', 'regions', 'edu', 'addedu']:
     db.create_table(table, 'project_trudvsem') #'project_trudvsem' - название схемы в вашей БД, создать, если нету
 db.conn.close()
 
@@ -110,6 +110,18 @@ for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
   if link['added']:
       continue
     
+  if pd.notna(link['cv']):
+    try:
+      print('\ncurricula_vitae')
+      ren = Renewal('curricula_vitae', base_url + file_url[0] + link['cv'])
+      ren.download()
+      ren.extract()
+      ren.parse_update(default_tables=['edu', 'addedu'])  #default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu']
+    except Exception as e:
+      print(f'curricula_vitae error: {e}')
+    ren.delete(remove_gz=remove_gz)
+    
+  '''  
   if idx == filelist.index[0]:
       try:
         print('\nprofessions')
@@ -147,7 +159,7 @@ for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
       ren = Renewal('curricula_vitae', base_url + file_url[0] + link['cv'])
       ren.download()
       ren.extract()
-      ren.parse_update(default_tables=['curricula_vitae', 'workexp'])  #default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu']
+      ren.parse_update(default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu'])  #default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu']
     except Exception as e:
       print(f'curricula_vitae error: {e}')
     ren.delete(remove_gz=remove_gz)
@@ -184,9 +196,10 @@ for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
     except Exception as e:
       print(f'vacancies error: {e}')
     ren.delete(remove_gz=remove_gz)
-
+  '''
   filelist.loc[idx, 'added'] = True
   filelist.to_csv(file_name, index=False)
+
 
 
 

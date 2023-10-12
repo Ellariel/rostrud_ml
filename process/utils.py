@@ -71,6 +71,7 @@ def get_csv_files(dirpath):
     filepaths = [dirpath + "/" + f for f in listdir(dirpath) if f.endswith('.csv')]
     if len(filepaths) and os.path.exists(filepaths[0]):
         return filepaths
+    return []
     
 def rem_csv_files(filepaths):
     #file_list = glob.glob(dirpath + "/*.csv")
@@ -83,6 +84,7 @@ def get_pickle_files(dirpath):
     filepaths = [dirpath + "/" + f for f in listdir(dirpath) if f.endswith('.pickle')]
     if len(filepaths) and os.path.exists(filepaths[0]):
         return filepaths
+    return []
     
 def rem_pickle_files(filepaths):
     if len(filepaths) and os.path.exists(filepaths[0]):
