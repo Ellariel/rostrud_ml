@@ -304,16 +304,17 @@ class CleaningData:
         """Создание колонки с описанием законченных курсов
         (в случае слишком многословного заполнения полей course_name, legal_name)"""
         df['description'] = None
-        df.loc[df.course_name.str.len() > 200, 'description'] = df.course_name
-        df.loc[df.legal_name.str.len() > 350, 'description'] = df.legal_name
-        df.loc[(df.course_name.str.len() > 200) & \
-               (df.legal_name.str.len() > 350) & \
-               (df.course_name != df.legal_name), 'description'] = \
-        df.course_name.str.cat(df.legal_name, sep=' | ', na_rep='-')
-        df.loc[df.course_name.str.len() > 200, 'course_name'] = ' '
-        df.loc[df.legal_name.str.len() > 350, 'legal_name'] = ' '
-        df.loc[df.course_name.isna(), 'course_name'] = 'Название курса не было указано'
-        df.loc[df.legal_name.isna(), 'legal_name'] = 'Название организации не было указано'
+        if 'course_name' in df.columns and 'legal_name' in df.columns:
+            df.loc[df.course_name.str.len() > 200, 'description'] = df.course_name
+            df.loc[df.legal_name.str.len() > 350, 'description'] = df.legal_name
+            df.loc[(df.course_name.str.len() > 200) & \
+                (df.legal_name.str.len() > 350) & \
+                (df.course_name != df.legal_name), 'description'] = \
+            df.course_name.str.cat(df.legal_name, sep=' | ', na_rep='-')
+            df.loc[df.course_name.str.len() > 200, 'course_name'] = ' '
+            df.loc[df.legal_name.str.len() > 350, 'legal_name'] = ' '
+            df.loc[df.course_name.isna(), 'course_name'] = 'Название курса не было указано'
+            df.loc[df.legal_name.isna(), 'legal_name'] = 'Название организации не было указано'
         return df
     
     def create_zero_one_col(self, series_name: str, df: pd.DataFrame) -> pd.DataFrame:

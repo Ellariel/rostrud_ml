@@ -140,6 +140,7 @@ class Renewal:
                     try:
                         #self.df = read_csv_object(csv_file)
                         self.df = load_pickle(csv_file)
+                        #self._check_cols(table)
                         self.df = process(table, self.df)
                         print(f"{table}({csv_file}) is processed")
                         
@@ -248,6 +249,7 @@ class Renewal:
                     try:
                         #self.df = read_csv_object(csv_file)
                         self.df = load_pickle(csv_file)
+                        #self._check_cols(self.name)
                         self.df = process(self.name, self.df)
                         #print(self.name, ": обработано")
                         print(f"{self.name}({csv_file}) is processed")

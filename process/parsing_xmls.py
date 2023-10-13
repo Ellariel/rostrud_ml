@@ -125,6 +125,7 @@ class ParseCvs(Parse):
                     'addedu': "addEducation"}
             df = pd.DataFrame()
             l = []
+            #j = 1
             i = 1
             # получаем список хешей всех ранее загруженных записей:
             old_hash_set = hashes(table)
@@ -150,6 +151,9 @@ class ParseCvs(Parse):
                             del ancestor.getparent()[0]
 
                     l.append(d)
+                    #j += 1
+                    #if j >= 100:
+                    #    break
 
                     if len(l) == self.csv_size: 
                         df = pd.DataFrame(l)
