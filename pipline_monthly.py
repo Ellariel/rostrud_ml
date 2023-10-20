@@ -109,19 +109,7 @@ print(f"starting process...")
 for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
   if link['added']:
       continue
-    
-  if pd.notna(link['cv']):
-    try:
-      print('\ncurricula_vitae')
-      ren = Renewal('curricula_vitae', base_url + file_url[0] + link['cv'])
-      ren.download()
-      ren.extract()
-      ren.parse_update(default_tables=['edu', 'addedu'])  #default_tables=['curricula_vitae', 'workexp', 'edu', 'addedu']
-    except Exception as e:
-      print(f'curricula_vitae error: {e}')
-    ren.delete(remove_gz=remove_gz)
-    
-  '''  
+     
   if idx == filelist.index[0]:
       try:
         print('\nprofessions')
@@ -196,7 +184,7 @@ for idx, link in tqdm(filelist.iterrows(), total=len(filelist)):
     except Exception as e:
       print(f'vacancies error: {e}')
     ren.delete(remove_gz=remove_gz)
-  '''
+
   filelist.loc[idx, 'added'] = True
   filelist.to_csv(file_name, index=False)
 
